@@ -22,15 +22,14 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo init
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      - name: Run traffic script with secrets
+        env:
+          TARGET_DOMAIN: ${{ vars.TARGET_DOMAIN }}
+          TRAFFIC_API_URL: ${{ vars.TRAFFIC_API_URL }}
+          TRAFFIC_AUTH_TOKEN: ${{ vars.TRAFFIC_AUTH_TOKEN }}
+        run: python scripts/traffic.py
