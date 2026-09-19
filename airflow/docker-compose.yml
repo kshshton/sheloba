@@ -30,10 +30,10 @@ services:
       AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME:-admin}
       AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
     volumes: &airflow-volumes
-      - ./dags:/opt/airflow/dags:Z
+      - ./dags:/opt/airflow/dags:z
       - airflow-logs:/opt/airflow/logs
       - airflow-plugins:/opt/airflow/plugins
-      - ../website/data:/opt/airflow/data:ro,Z
+      - ../website/data:/opt/airflow/data:ro,z
     entrypoint: /bin/bash
     command:
       - -c
