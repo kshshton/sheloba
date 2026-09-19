@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Flat · Sheloba</title>
+    <title>{{NAME}} · Sheloba</title>
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
@@ -17,14 +17,23 @@
     <main class="page">
       <p class="crumbs">
         <a href="./index.html">Home</a> / <a href="./index.html">Flats</a> /
-        <span id="crumb-name">Listing</span>
+        <span id="crumb-name">{{NAME}}</span>
       </p>
       <div class="detail-layout">
-        <div id="gallery" class="gallery"></div>
+        <div id="gallery" class="gallery" style="background-image: url('{{IMAGE}}')"></div>
         <aside class="facts-panel">
-          <div id="flat-facts" aria-live="polite"></div>
-          <p id="address"></p>
-          <a class="cta" id="enquire" href="mailto:viewings@sheloba.example">Request a viewing</a>          
+          <div
+            id="flat-facts"
+            aria-live="polite"
+            data-price="{{PRICE}}"
+            data-name="{{NAME}}"
+            data-living-space="{{LIVING_SPACE}}"
+            data-id="{{ID}}"
+            data-latitude="{{LATITUDE}}"
+            data-longitude="{{LONGITUDE}}"
+          ></div>
+          <p id="address">{{ROOMS}} · {{ADDRESS}}</p>
+          <a class="cta" id="enquire" href="mailto:viewings@sheloba.example">Request a viewing</a>
         </aside>
       </div>
     </main>

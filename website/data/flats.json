@@ -1,0 +1,38 @@
+[
+  {
+    "id": "SH-48291",
+    "slug": "riverside-loft",
+    "name": "Riverside Loft",
+    "price": "€ 425,000",
+    "livingSpace": "78 m²",
+    "rooms": "3 rooms",
+    "address": "12 Quai des Brumes, Lyon",
+    "latitude": 45.7611,
+    "longitude": 4.8281,
+    "image": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1400&q=80"
+  },
+  {
+    "id": "SH-10944",
+    "slug": "garden-maisonette",
+    "name": "Garden Maisonette",
+    "price": "€ 610,500",
+    "livingSpace": "112 m²",
+    "rooms": "4 rooms",
+    "address": "8 Rue des Lilas, Bordeaux",
+    "latitude": 44.8412,
+    "longitude": -0.5805,
+    "image": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1400&q=80"
+  },
+  {
+    "id": "SH-77320",
+    "slug": "attic-studio",
+    "name": "Attic Studio",
+    "price": "€ 189,900",
+    "livingSpace": "32 m²",
+    "rooms": "1 room",
+    "address": "4 Passage du Midi, Lille",
+    "latitude": 50.6292,
+    "longitude": 3.0573,
+    "image": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1400&q=80"
+  }
+]

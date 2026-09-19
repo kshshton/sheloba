@@ -1,4 +1,3 @@
-import { getFlatBySlug } from "./flats.js";
 import {
   LAYOUTS,
   layoutIndexFor,
@@ -6,16 +5,14 @@ import {
   renderFacts,
 } from "./dom-layouts.js";
 
-const params = new URLSearchParams(location.search);
-const flat = getFlatBySlug(params.get("slug"));
-
-document.title = `${flat.name} · Sheloba`;
-document.getElementById("crumb-name").textContent = flat.name;
-document.getElementById("gallery").style.backgroundImage = `url("${flat.image}")`;
-document.getElementById("address").textContent = `${flat.rooms} · ${flat.address}`;
-
 const facts = document.getElementById("flat-facts");
 const note = document.getElementById("layout-note");
+const flat = {
+  price: facts.dataset.price,
+  name: facts.dataset.name,
+  livingSpace: facts.dataset.livingSpace,
+  id: facts.dataset.id,
+};
 
 function paintFacts() {
   renderFacts(facts, flat);
