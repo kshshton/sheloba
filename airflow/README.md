@@ -1,6 +1,6 @@
 # Sheloba Airflow
 
-Sheloba uses Apache Airflow and PostgreSQL to load website flat listings from `../website/data/flats.json` into the `real_estate.flats` table.
+Sheloba uses Apache Airflow and PostgreSQL to load website flat listings from `../website/data/flats.json` into the `data.listings` table.
 
 ## What is included
 
@@ -30,14 +30,14 @@ docker compose ps
 
 Enable and trigger the `load_sheloba_flats` DAG in the Airflow UI. It runs daily after activation and can also be triggered manually.
 
-The DAG reads the website data mounted at `/opt/airflow/data/flats.json` and inserts one snapshot per listing for each load timestamp. The composite key `(id, updated_at)` preserves earlier snapshots instead of overwriting them.
+The DAG reads the website data mounted at `/opt/airflow/data/flats.json` and inserts one snapshot per listing for each load timestamp into `data.listings`. The composite key `(id, updated_at)` preserves earlier snapshots instead of overwriting them.
 
 Inspect loaded records with:
 
 ```sh
 docker compose exec postgres sh -c \
   'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-  -c "SELECT id, name, latitude, longitude, updated_at FROM real_estate.flats ORDER BY updated_at, id;"'
+  -c "SELECT id, name, latitude, longitude, updated_at FROM data.listings ORDER BY updated_at, id;"'
 ```
 
 ## Documentation

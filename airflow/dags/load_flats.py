@@ -18,9 +18,10 @@ def load_flats() -> None:
 
     with hook.get_conn() as connection:
         with connection.cursor() as cursor:
+            cursor.execute("CREATE SCHEMA IF NOT EXISTS data")
             cursor.execute(
                 """
-                CREATE TABLE IF NOT EXISTS listings (
+                CREATE TABLE IF NOT EXISTS data.listings (
                     id TEXT NOT NULL,
                     slug TEXT NOT NULL,
                     name TEXT NOT NULL,
@@ -36,17 +37,17 @@ def load_flats() -> None:
                 )
                 """
             )
-            cursor.execute("ALTER TABLE listings DROP CONSTRAINT IF EXISTS listings_pkey")
-            cursor.execute("ALTER TABLE listings DROP CONSTRAINT IF EXISTS listings_slug_key")
+            cursor.execute("ALTER TABLE data.listings DROP CONSTRAINT IF EXISTS listings_pkey")
+            cursor.execute("ALTER TABLE data.listings DROP CONSTRAINT IF EXISTS listings_slug_key")
             cursor.execute(
                 """
-                ALTER TABLE listings
+                ALTER TABLE data.listings
                 ADD CONSTRAINT listings_pkey PRIMARY KEY (id, updated_at)
                 """
             )
             cursor.executemany(
                 """
-                INSERT INTO listings (
+                INSERT INTO data.listings (
                     id, slug, name, price, living_space, rooms, address,
                     latitude, longitude, image, updated_at
                 )
