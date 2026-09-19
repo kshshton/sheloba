@@ -1,20 +1,22 @@
 """Load Sheloba flat listings into PostgreSQL."""
 
-import json
 from datetime import timedelta
-from pathlib import Path
 
 import pendulum
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-SOURCE_FILE = Path("/opt/airflow/data/flats.json")
-POSTGRES_CONNECTION_ID = "sheloba_postgres"
+from scripts.config import POSTGRES_CONNECTION_ID
+from scripts.load_flats.scrape_flats import scrape_flats
 
 
-def load_flats() -> None:
-    flats = json.loads(SOURCE_FILE.read_text(encoding="utf-8"))
+def load_flats(
+    source_url: str,
+    user_agent: str,
+    request_timeout_seconds: int,
+) -> None:
+    flats = scrape_flats(source_url, user_agent, request_timeout_seconds)
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONNECTION_ID)
 
     with hook.get_conn() as connection:
@@ -46,6 +48,10 @@ def load_flats() -> None:
                 ADD CONSTRAINT listings_pkey PRIMARY KEY (id, updated_at)
                 """
             )
+            # Set retention policy to keep only the most recent version of each listing
+            cursor.execute(
+                "DELETE FROM data.listings WHERE updated_at < NOW() - INTERVAL '1 hour'"
+            )
             cursor.executemany(
                 """
                 INSERT INTO data.listings (
@@ -72,17 +78,22 @@ def load_flats() -> None:
             )
 
 dag = DAG(
-    dag_id="load_sheloba_flats",
-    description="Load website flat listings into PostgreSQL",
-    start_date=pendulum.now("UTC"),
-    schedule_interval=timedelta(minutes=10),
-    catchup=True,
-    tags=["sheloba", "postgresql"],
+    dag_id="load_flats",
+    description="Load listings from the website",
+    start_date=pendulum.now("Europe/Berlin"),
+    schedule_interval=timedelta(minutes=2),
+    catchup=False,
+    tags=["flats"],
 )
 
 load_flats_task = PythonOperator(
     task_id="load_flats",
     python_callable=load_flats,
+    op_kwargs={
+        "source_url": "http://host.docker.internal:8765/",
+        "user_agent": "ShelobaAirflowScraper/1.0",
+        "request_timeout_seconds": 30,
+    },
     dag=dag,
 )
 

@@ -1,4 +1,15 @@
 services:
+  website:
+    image: python:3.11-slim
+    working_dir: /app
+    environment:
+      SHELOBA_HOST: 0.0.0.0
+    volumes:
+      - ../website:/app:ro,z
+    command: python server.py
+    ports:
+      - "8765:8765"
+
   postgres:
     image: postgres:16
     environment:
@@ -29,11 +40,12 @@ services:
       AIRFLOW_CONN_SHELOBA_POSTGRES: postgresql://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@postgres:5432/${POSTGRES_DB:-airflow}
       AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME:-admin}
       AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
+      PYTHONPATH: /opt/airflow
     volumes: &airflow-volumes
       - ./dags:/opt/airflow/dags:z
+      - ./scripts:/opt/airflow/scripts:z
       - airflow-logs:/opt/airflow/logs
       - airflow-plugins:/opt/airflow/plugins
-      - ../website/data:/opt/airflow/data:ro,z
     entrypoint: /bin/bash
     command:
       - -c
@@ -63,6 +75,8 @@ services:
     depends_on:
       airflow-init:
         condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment: *airflow-environment
     volumes: *airflow-volumes
     command: scheduler

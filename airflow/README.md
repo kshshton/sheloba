@@ -1,13 +1,15 @@
 # Sheloba Airflow
 
-Sheloba uses Apache Airflow and PostgreSQL to load website flat listings from `../website/data/flats.json` into the `data.listings` table.
+Sheloba uses Apache Airflow and PostgreSQL to load flat listings scraped from the website into the `data.listings` table.
 
 ## What is included
 
+- Sheloba website source used by the scraper
 - PostgreSQL 16 for Airflow metadata and listing data
 - Airflow webserver for the management UI
 - Airflow scheduler for DAG execution
-- `load_sheloba_flats` DAG for loading timestamped listing snapshots
+- `load_flats` DAG for loading timestamped listing snapshots
+- Reusable scraper logic in `scripts/`
 - Docker Compose configuration for local development
 
 ## Quick start
@@ -28,9 +30,9 @@ docker compose ps
 
 ## Load listings
 
-Enable and trigger the `load_sheloba_flats` DAG in the Airflow UI. It runs daily after activation and can also be triggered manually.
+Enable and trigger the `load_flats` DAG in the Airflow UI. It runs daily after activation and can also be triggered manually.
 
-The DAG reads the website data mounted at `/opt/airflow/data/flats.json` and inserts one snapshot per listing for each load timestamp into `data.listings`. The composite key `(id, updated_at)` preserves earlier snapshots instead of overwriting them.
+The DAG scrapes the host-published website at `http://host.docker.internal:8765/` and inserts one snapshot per listing for each load timestamp into `data.listings`. The DAG definition lives in `dags/`, while reusable scraper logic lives in `scripts/`. The composite key `(id, updated_at)` preserves snapshots for one hour before the DAG removes them.
 
 Inspect loaded records with:
 

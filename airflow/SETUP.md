@@ -18,8 +18,9 @@ cd airflow
 
 ## Services and network
 
-The Compose project runs four services:
+The Compose project runs five services:
 
+- `website`: Sheloba listing site used as the scraper source.
 - `postgres`: PostgreSQL 16 for Airflow metadata and Sheloba listing data.
 - `airflow-init`: waits for PostgreSQL, runs migrations, and creates the Airflow administrator.
 - `airflow-webserver`: serves the Airflow UI.
@@ -41,6 +42,12 @@ The Airflow UI is published on:
 
 ```text
 http://localhost:8080
+```
+
+The website source is published on:
+
+```text
+http://localhost:8765
 ```
 
 ## Create the environment file
@@ -210,19 +217,15 @@ docker compose exec airflow-webserver \
 
 ## DAG and data flow
 
-The `load_sheloba_flats` DAG reads:
+The `load_flats` DAG scrapes the host-published website through Docker's host gateway:
 
 ```text
-/opt/airflow/data/flats.json
+http://host.docker.internal:8765/
 ```
 
-That path is a read-only mount of:
+The scraper reads listing links from the index page and metadata from each flat detail page. The DAG definition is in `dags/load_flats.py`, reusable scraper logic is in `scripts/load_flats/scrape_flats.py`, and the source URL, user agent, and request timeout are passed to the scraper as task arguments.
 
-```text
-../website/data/flats.json
-```
-
-The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
+The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads for one hour. Older snapshots are removed on each load. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
 
 Inspect loaded records:
 
@@ -232,7 +235,7 @@ docker compose exec postgres sh -c \
   -c "SELECT id, name, latitude, longitude, updated_at FROM data.listings ORDER BY updated_at, id;"'
 ```
 
-After changing `website/data/flats.json`, trigger the DAG again to load the new data.
+After changing the website listing pages, trigger the DAG again to load the new data.
 
 ## Troubleshooting
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 from html import escape
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -11,7 +12,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = ROOT / "data" / "flats.json"
-HOST = "127.0.0.1"
+HOST = os.environ.get("SHELOBA_HOST", "127.0.0.1")
 PORT = 8765
 BLOCKED_PREFIXES = ("/data", "/server.py")
 BLOCKED_NAMES = {"flats.js", "flats.json", "listing.js"}
