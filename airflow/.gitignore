@@ -1,0 +1,5 @@
+.env
+logs/*
+plugins/*
+__pycache__/
+*.session.sql
