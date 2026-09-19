@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flat · Sheloba</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./index.html">Sheloba</a>
+      <nav class="nav">
+        <a href="./index.html">Flats</a>
+        <a href="#enquire">Enquire</a>
+      </nav>
+    </header>
+    <main class="page">
+      <p class="crumbs">
+        <a href="./index.html">Home</a> / <a href="./index.html">Flats</a> /
+        <span id="crumb-name">Listing</span>
+      </p>
+      <div class="detail-layout">
+        <div id="gallery" class="gallery"></div>
+        <aside class="facts-panel">
+          <div id="flat-facts" aria-live="polite"></div>
+          <p id="address"></p>
+          <a class="cta" id="enquire" href="mailto:viewings@sheloba.example">Request a viewing</a>          
+        </aside>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <span>Sheloba residential</span>
+      <span>Listing details refresh markup every minute</span>
+      <span id="layout-note" class="layout-note"></span>
+    </footer>
+    <script type="module" src="./js/detail.js"></script>
+  </body>
+</html>
