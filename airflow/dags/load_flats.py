@@ -1,6 +1,7 @@
 """Load Sheloba flat listings into PostgreSQL."""
 
 import json
+from datetime import timedelta
 from pathlib import Path
 
 import pendulum
@@ -73,8 +74,8 @@ def load_flats() -> None:
 dag = DAG(
     dag_id="load_sheloba_flats",
     description="Load website flat listings into PostgreSQL",
-    schedule="@daily",
-    start_date=pendulum.datetime(2026, 9, 10, tz="UTC"),
+    start_date=pendulum.now("UTC"),
+    schedule_interval=timedelta(minutes=10),
     catchup=True,
     tags=["sheloba", "postgresql"],
 )
