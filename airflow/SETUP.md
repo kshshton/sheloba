@@ -222,14 +222,14 @@ That path is a read-only mount of:
 ../website/data/flats.json
 ```
 
-The DAG creates or updates `real_estate.flats` and upserts listings by `id`. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
+The DAG creates timestamped listing snapshots in `real_estate.flats`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
 
 Inspect loaded records:
 
 ```sh
 docker compose exec postgres sh -c \
   'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-   -c "SELECT id, name, latitude, longitude FROM real_estate.flats ORDER BY id;"'
+  -c "SELECT id, name, latitude, longitude, updated_at FROM real_estate.flats ORDER BY updated_at, id;"'
 ```
 
 After changing `website/data/flats.json`, trigger the DAG again to load the new data.

@@ -21,8 +21,8 @@ def load_flats() -> None:
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS listings (
-                    id TEXT PRIMARY KEY,
-                    slug TEXT NOT NULL UNIQUE,
+                    id TEXT NOT NULL,
+                    slug TEXT NOT NULL,
                     name TEXT NOT NULL,
                     price TEXT NOT NULL,
                     living_space TEXT NOT NULL,
@@ -31,8 +31,17 @@ def load_flats() -> None:
                     latitude DOUBLE PRECISION NOT NULL,
                     longitude DOUBLE PRECISION NOT NULL,
                     image TEXT NOT NULL,
-                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (id, updated_at)
                 )
+                """
+            )
+            cursor.execute("ALTER TABLE listings DROP CONSTRAINT IF EXISTS listings_pkey")
+            cursor.execute("ALTER TABLE listings DROP CONSTRAINT IF EXISTS listings_slug_key")
+            cursor.execute(
+                """
+                ALTER TABLE listings
+                ADD CONSTRAINT listings_pkey PRIMARY KEY (id, updated_at)
                 """
             )
             cursor.executemany(
@@ -42,17 +51,6 @@ def load_flats() -> None:
                     latitude, longitude, image, updated_at
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-                ON CONFLICT (id) DO UPDATE SET
-                    slug = EXCLUDED.slug,
-                    name = EXCLUDED.name,
-                    price = EXCLUDED.price,
-                    living_space = EXCLUDED.living_space,
-                    rooms = EXCLUDED.rooms,
-                    address = EXCLUDED.address,
-                    latitude = EXCLUDED.latitude,
-                    longitude = EXCLUDED.longitude,
-                    image = EXCLUDED.image,
-                    updated_at = NOW()
                 """,
                 [
                     (
