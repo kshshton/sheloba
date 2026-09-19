@@ -20,8 +20,7 @@ def load_flats() -> None:
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-                CREATE SCHEMA IF NOT EXISTS real_estate;
-                CREATE TABLE IF NOT EXISTS real_estate.flats (
+                CREATE TABLE IF NOT EXISTS listings (
                     id TEXT PRIMARY KEY,
                     slug TEXT NOT NULL UNIQUE,
                     name TEXT NOT NULL,
@@ -38,7 +37,7 @@ def load_flats() -> None:
             )
             cursor.executemany(
                 """
-                INSERT INTO real_estate.flats (
+                INSERT INTO listings (
                     id, slug, name, price, living_space, rooms, address,
                     latitude, longitude, image, updated_at
                 )
@@ -72,16 +71,19 @@ def load_flats() -> None:
                 ],
             )
 
-
-with DAG(
+dag = DAG(
     dag_id="load_sheloba_flats",
     description="Load website flat listings into PostgreSQL",
     schedule="@daily",
-    start_date=pendulum.datetime(2026, 1, 1, tz="UTC"),
-    catchup=False,
+    start_date=pendulum.datetime(2026, 9, 10, tz="UTC"),
+    catchup=True,
     tags=["sheloba", "postgresql"],
-) as dag:
-    load_flats_task = PythonOperator(
-        task_id="load_flats",
-        python_callable=load_flats,
-    )
+)
+
+load_flats_task = PythonOperator(
+    task_id="load_flats",
+    python_callable=load_flats,
+    dag=dag,
+)
+
+load_flats_task
