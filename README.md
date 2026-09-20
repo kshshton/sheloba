@@ -11,11 +11,12 @@ Sheloba is a resilient web-scraping pipeline for extracting structured data from
 ```mermaid
 flowchart LR
     W[website] -->|HTML pages| S[Airflow DAG]
-    S --> P[Playwright browser]
-    P -->|listing metadata| DB[(PostgreSQL)]
+    S --> D[dom_definition.json]
+    D -->|loaded CSS selectors| P[Playwright browser]
+    P -->|successful scrape| V[validated records]
+    V -->|listing metadata| DB[(PostgreSQL)]
     P -. selectors no longer match .-> G[LLM]
-    G -. new CSS selectors .-> J[dom_definition.json]
-    J -. reused on next run .-> P
+    G -. refreshed CSS selectors .-> D
 ```
 
 The website provides listing index and detail pages. Airflow runs the scraper, PostgreSQL stores timestamped listing snapshots, and the LLM is used only to regenerate stale DOM selectors.
