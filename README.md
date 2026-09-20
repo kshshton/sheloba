@@ -1,8 +1,8 @@
+# Sheloba
+
 <p align="center">
   <img src="readme-artifacts/sheloba.png" alt="Sheloba logo" width="180">
 </p>
-
-# Sheloba
 
 Sheloba is a resilient web-scraping pipeline for collecting flat-listing metadata from websites whose rendered DOM changes over time. It uses Playwright for browser-based extraction, Airflow to orchestrate runs, and PostgreSQL to store listing snapshots. When the saved selectors stop matching, an LLM proposes replacement CSS selectors and Sheloba validates them before saving the update.
 
