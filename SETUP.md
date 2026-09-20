@@ -1,6 +1,6 @@
-# Airflow and PostgreSQL Setup
+# Project Setup
 
-This guide describes the local Docker environment for the website, including configuration, startup order, database connectivity, persistence, SQLTools, DAG execution, and troubleshooting.
+This guide describes how to run the full local stack for the project: the website scraper source, the Airflow pipeline, and the PostgreSQL database. It covers local startup, Docker networking, environment variables, credential handling, and troubleshooting.
 
 ## Prerequisites
 
@@ -8,13 +8,37 @@ Install and start:
 
 - Docker Engine
 - Docker Compose v2 (`docker compose`)
+- Python 3.11+ if you want to run the website locally without Docker
 - VS Code with SQLTools and its PostgreSQL driver, if database browsing is needed
 
-Run commands from the Airflow directory:
+Run commands from the repository root unless a step explicitly says otherwise.
+
+## Website setup
+
+The website is a lightweight Python HTTP app in `website/`. It serves static listing pages and detail pages from `website/data/flats.json` and is used as the scraper source in the Airflow stack.
+
+### Run the website directly
 
 ```sh
-cd airflow
+cd website
+python3 server.py
 ```
+
+Then open:
+
+- <http://127.0.0.1:8765/>
+
+Use `SHELOBA_HOST=0.0.0.0` when the website must be reachable from another container or host machine.
+
+### Website in Docker Compose
+
+The `website` service is already defined in `airflow/docker-compose.yml` and is published on:
+
+```text
+http://localhost:8765
+```
+
+It runs with a local volume mount of the `website/` directory, so changes to HTML or Python files are reflected when the container is restarted.
 
 ## Services and network
 
@@ -52,7 +76,7 @@ http://localhost:8765
 
 ## Create the environment file
 
-Create `airflow/.env` with the values required by the Compose file:
+Create `airflow/.env` with the values required by the Compose file. The Docker stack is defined in `airflow/docker-compose.yml`, so the environment file lives alongside it:
 
 ```dotenv
 POSTGRES_USER=airflow
@@ -74,9 +98,10 @@ The passwords serve different systems:
 
 ## Build and start
 
-Build the custom Airflow image and start the complete environment in the background:
+From the Airflow directory, build the custom Airflow image and start the complete environment in the background:
 
 ```sh
+cd airflow
 docker compose up -d --build
 ```
 
@@ -108,6 +133,18 @@ For a normal restart:
 
 ```sh
 docker compose restart
+```
+
+After changing website data, restart the website container so the server reloads `website/data/flats.json`:
+
+```sh
+docker compose restart website
+```
+
+After changing dependencies, the Dockerfile, or environment variables, rebuild the stack:
+
+```sh
+docker compose up -d --build
 ```
 
 After changing `.env`, `docker-compose.yml`, ports, or the Dockerfile, recreate the services:

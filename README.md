@@ -62,7 +62,7 @@ The model does not receive the database, source files, or API credentials. It se
 
 ## Run the Project
 
-Prerequisites: Docker Engine and Docker Compose v2. Create `airflow/.env` as described in [airflow/SETUP.md](airflow/SETUP.md#create-the-environment-file), including Airflow credentials and `GEMINI_API_KEY` for selector recovery. From the repository root:
+Prerequisites: Docker Engine and Docker Compose v2. Create `airflow/.env` as described in [SETUP.md](SETUP.md#create-the-environment-file), including Airflow credentials and `GEMINI_API_KEY` for selector recovery. From the repository root:
 
 ```sh
 cd airflow
@@ -101,8 +101,6 @@ docker compose exec postgres sh -c \
 docker compose down
 ```
 
-After changing website data, restart the website container so the server reloads `data/flats.json`. After changing dependencies, the Dockerfile, or environment variables, rebuild with `docker compose up -d --build`.
-
 ## Website Routes
 
 - `/` or `/index.html`: listing index
@@ -120,4 +118,4 @@ Open <http://127.0.0.1:8765/>. Use `SHELOBA_HOST=0.0.0.0` when it must be reacha
 
 ## Infrastructure Details
 
-See [airflow/SETUP.md](airflow/SETUP.md) for Docker service dependencies, networking, credentials, PostgreSQL persistence, SQLTools, and troubleshooting.
+See [SETUP.md](SETUP.md) for Docker service dependencies, networking, credentials, PostgreSQL persistence, SQLTools, website setup, and troubleshooting.
