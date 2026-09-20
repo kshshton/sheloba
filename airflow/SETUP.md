@@ -1,6 +1,6 @@
 # Airflow and PostgreSQL Setup
 
-This guide describes the local Docker environment for Sheloba, including configuration, startup order, database connectivity, persistence, SQLTools, DAG execution, and troubleshooting.
+This guide describes the local Docker environment for Dummy Flats, including configuration, startup order, database connectivity, persistence, SQLTools, DAG execution, and troubleshooting.
 
 ## Prerequisites
 
@@ -61,6 +61,8 @@ POSTGRES_DB=airflow
 AIRFLOW_ADMIN_USERNAME=admin
 AIRFLOW_ADMIN_PASSWORD=admin
 AIRFLOW_PORT=8080
+GEMINI_API_KEY=your-gemini-api-key
+SHELOBA_LLM_MODEL=gemini-3.6-flash
 ```
 
 The `.env` file is ignored by Git. Keep real passwords out of tracked files and use stronger values outside local development.
@@ -223,11 +225,11 @@ The `load_flats` DAG scrapes the host-published website through Docker's host ga
 http://host.docker.internal:8765/
 ```
 
-The scraper reads listing links from the index page and metadata from each flat detail page. The DAG definition is in `dags/load_flats.py`, reusable scraper logic is in `scripts/load_flats/scrape_flats.py`, and the source URL, user agent, and request timeout are passed to the scraper as task arguments.
+The scraper reads listing links from the index page and metadata from each flat detail page. The DAG definition is in `dags/load_flats.py`, reusable scraper logic is in `scripts/load_flats/scrape_flats.py`, and the source URL and request timeout are passed to the scraper as task arguments. Images are not scraped.
 
-If the known selectors no longer match, the scraper uses its headless Chromium browser to capture the index and detail DOM, calls the model configured by `SHELOBA_LLM_MODEL` (default `gpt-4o-mini`) with `OPENAI_API_KEY`, and retries using the returned selector definition. This recovery path is only entered after the normal parser raises a structural error; routine successful loads do not call the LLM.
+If the saved selectors no longer match, the scraper uses its headless Chromium browser to capture the index and detail DOM, calls the Gemini model configured by `SHELOBA_LLM_MODEL` (default `gemini-3.6-flash`) with `GEMINI_API_KEY`, saves the returned selector definition to `scripts/load_flats/dom_definition.json`, and retries. This recovery path is only entered after the normal parser raises a structural error; routine successful loads do not call the LLM.
 
-The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads for one hour. Older snapshots are removed on each load. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
+The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads for one hour. Older snapshots are removed on each load. The current DAG has no automatic schedule, so trigger it manually in the Airflow UI. On the next successful run, the DAG also removes the old `image` column from an existing table.
 
 Inspect loaded records:
 

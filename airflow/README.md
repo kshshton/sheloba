@@ -1,10 +1,15 @@
-# Sheloba Airflow
+# Dummy Flats data pipeline
 
-Sheloba uses Apache Airflow and PostgreSQL to load flat listings scraped from the website into the `data.listings` table.
+This project has two cooperating parts:
+
+1. The Dummy Flats website serves flat listing pages.
+2. The Airflow pipeline visits those pages with Playwright and stores listing metadata in PostgreSQL.
+
+The website is deliberately simple: its HTML is the source consumed by the scraper. Airflow owns the workflow, database connection, and DOM-recovery logic.
 
 ## What is included
 
-- Sheloba website source used by the scraper
+- Dummy Flats website source used by the scraper
 - PostgreSQL 16 for Airflow metadata and listing data
 - Airflow webserver for the management UI
 - Airflow scheduler for DAG execution
@@ -14,13 +19,13 @@ Sheloba uses Apache Airflow and PostgreSQL to load flat listings scraped from th
 
 ## Quick start
 
-From this directory, start the environment with:
+From this directory, start all servers and supporting services with:
 
 ```sh
 docker compose up -d --build
 ```
 
-Then open <http://localhost:8080> and sign in with the Airflow credentials configured in `.env`.
+This starts the website, PostgreSQL, Airflow initialization, Airflow webserver, and Airflow scheduler. Open <http://localhost:8080> and sign in with the Airflow credentials configured in `.env`. The website is available at <http://localhost:8765>.
 
 Check service status with:
 
@@ -32,9 +37,27 @@ docker compose ps
 
 Enable and trigger the `load_flats` DAG in the Airflow UI. It runs daily after activation and can also be triggered manually.
 
-The DAG scrapes the host-published website at `http://host.docker.internal:8765/` and inserts one snapshot per listing for each load timestamp into `data.listings`. The DAG definition lives in `dags/`, while reusable scraper logic lives in `scripts/`. The composite key `(id, updated_at)` preserves snapshots for one hour before the DAG removes them.
+The DAG scrapes the host-published website at `http://host.docker.internal:8765/` and inserts one snapshot per listing for each load timestamp into `data.listings`. The DAG definition lives in `dags/`, while reusable scraper logic lives in `scripts/`. The composite key `(id, updated_at)` preserves snapshots for one hour before the DAG removes them. Images are not scraped or stored.
 
-The scraper uses its known DOM definition first. If it finds no listings or required detail metadata, it opens the pages with Playwright, asks the configured OpenAI-compatible model to define the current selectors, and retries with that definition. Set `OPENAI_API_KEY` for this recovery path and optionally set `SHELOBA_LLM_MODEL` (default: `gpt-4o-mini`) in the Airflow container environment. The LLM is not contacted when the known DOM definition succeeds.
+The scraper uses the selectors in `scripts/load_flats/dom_definition.json` first. If they no longer match the page, it uses Playwright to inspect the current index and detail DOM, asks the configured Gemini model for CSS selectors, saves the new definition to that JSON file, and retries the static scraper. Set `GEMINI_API_KEY` for this recovery path and optionally set `SHELOBA_LLM_MODEL` (default: `gemini-3.6-flash`) in `.env`. The LLM is not contacted when the saved DOM definition succeeds.
+
+## How the servers work
+
+`docker compose up -d --build` starts the services in dependency order:
+
+1. `website` serves Dummy Flats on port `8765`.
+2. `postgres` stores Airflow metadata and listing data on host port `5433`.
+3. `airflow-init` runs database migrations and creates the Airflow administrator.
+4. `airflow-webserver` provides the UI on port `8080`.
+5. `airflow-scheduler` executes the `load_flats` DAG.
+
+The scheduler reaches the website through `host.docker.internal:8765`. In the Airflow UI, trigger `load_flats` manually because its current schedule is `None`.
+
+After changing dependencies, the Dockerfile, or environment variables, rebuild and recreate the services:
+
+```sh
+docker compose up -d --build
+```
 
 Inspect loaded records with:
 
