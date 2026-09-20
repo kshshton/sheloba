@@ -1,6 +1,6 @@
 # Airflow and PostgreSQL Setup
 
-This guide describes the local Docker environment for Dummy Flats, including configuration, startup order, database connectivity, persistence, SQLTools, DAG execution, and troubleshooting.
+This guide describes the local Docker environment for the website, including configuration, startup order, database connectivity, persistence, SQLTools, DAG execution, and troubleshooting.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ cd airflow
 
 The Compose project runs five services:
 
-- `website`: Dummy Flats listing site used as the scraper source.
+- `website`: listing site used as the scraper source.
 - `postgres`: PostgreSQL 16 for Airflow metadata and listing data.
 - `airflow-init`: waits for PostgreSQL, runs migrations, and creates the Airflow administrator.
 - `airflow-webserver`: serves the Airflow UI.

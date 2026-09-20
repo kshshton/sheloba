@@ -4,21 +4,27 @@
 
 # Sheloba
 
-Sheloba is a resilient web-scraping pipeline for collecting flat-listing metadata from websites whose rendered DOM changes over time. It uses Playwright for browser-based extraction, Airflow to orchestrate runs, and PostgreSQL to store listing snapshots. When the saved selectors stop matching, Gemini proposes replacement CSS selectors and Sheloba validates them before saving the update.
+Sheloba is a resilient web-scraping pipeline for collecting flat-listing metadata from websites whose rendered DOM changes over time. It uses Playwright for browser-based extraction, Airflow to orchestrate runs, and PostgreSQL to store listing snapshots. When the saved selectors stop matching, an LLM proposes replacement CSS selectors and Sheloba validates them before saving the update.
 
 ## High-Level Flow
 
 ```mermaid
 flowchart LR
-    W[Dummy Flats website] -->|HTML pages| S[Airflow load_flats DAG]
+    W[website] -->|HTML pages| S[Airflow load_flats DAG]
     S --> P[Playwright browser]
     P -->|listing metadata| DB[(PostgreSQL)]
-    P -. selectors no longer match .-> G[Gemini]
+    P -. selectors no longer match .-> G[LLM]
     G -. new CSS selectors .-> J[dom_definition.json]
     J -. reused on next run .-> P
 ```
 
-The website provides listing index and detail pages. Airflow runs the scraper, PostgreSQL stores timestamped listing snapshots, and Gemini is used only to regenerate stale DOM selectors. Images are not collected.
+The website provides listing index and detail pages. Airflow runs the scraper, PostgreSQL stores timestamped listing snapshots, and the LLM is used only to regenerate stale DOM selectors.
+
+## Project Goal
+
+This project explores a cheaper and more reliable scraping pattern: keep the normal extraction path deterministic and rule-based, and call an LLM only when the site layout breaks and a selector update is needed. The goal is to reduce the cost of fully agentic scraping while removing the need for manual DOM maintenance.
+
+Instead of relying on LLMs for every page, Sheloba uses Playwright with saved CSS selectors for routine extraction and treats the LLM as a targeted recovery mechanism when pages drift or selectors fail. This keeps the pipeline scalable, resilient, and largely autonomous.
 
 ## How AI-Assisted Scraping Works
 
@@ -27,8 +33,8 @@ The scraper is mostly deterministic. AI is a recovery mechanism for DOM changes,
 1. Playwright opens the index page and follows each listing link using the CSS selectors in `airflow/scripts/load_flats/dom_definition.json`.
 2. It extracts the listing facts from the detail page, validates the required fields, and converts them into the database record shape.
 3. If a selector is missing, invalid, or returns incomplete metadata, the scraper treats the saved DOM definition as stale.
-4. It opens the index page and the first available detail page, then sends their rendered HTML bodies to Gemini through the OpenAI-compatible API. The API key is read from `GEMINI_API_KEY`; the model defaults to `gemini-3.6-flash` and can be changed with `SHELOBA_LLM_MODEL`.
-5. Gemini returns JSON containing CSS selectors for the repeated listing elements, their detail links, the detail-page facts attribute, and the address. The response is required to use this schema:
+4. It opens the index page and the first available detail page, then sends their rendered HTML bodies to the LLM through the OpenAI-compatible API. The API key is read from `GEMINI_API_KEY`; the model defaults to `gemini-3.6-flash` and can be changed with `SHELOBA_LLM_MODEL`.
+5. The LLM returns JSON containing CSS selectors for the repeated listing elements, their detail links, the detail-page facts attribute, and the address. The response is required to use this schema:
 
    ```json
    {
@@ -51,7 +57,7 @@ The model does not receive the database, source files, or API credentials. It se
 ## Project Areas and How They Work
 
 - `website/`: A small Python HTTP server that loads `data/flats.json` and renders an index page plus flat detail pages. The rendered HTML is the scraper contract; raw JSON and server files are not public routes.
-- `airflow/`: The `load_flats` DAG, Playwright scraper, Gemini recovery, PostgreSQL integration, and Docker Compose configuration.
+- `airflow/`: The `load_flats` DAG, Playwright scraper, LLM recovery, PostgreSQL integration, and Docker Compose configuration.
 - `airflow/scripts/load_flats/dom_definition.json`: The saved CSS selectors used during normal scraping.
 
 ## Run the Project
@@ -67,7 +73,7 @@ docker compose ps
 Open the services:
 
 - Airflow UI: <http://localhost:8080>
-- Dummy Flats website: <http://localhost:8765>
+- website: <http://localhost:8765>
 - PostgreSQL: `localhost:5433`
 
 Sign in to Airflow and trigger the `load_flats` DAG manually. The current DAG has no automatic schedule.
