@@ -217,30 +217,6 @@ docker compose exec airflow-webserver \
   airflow users reset-password --username admin --password 'new-password'
 ```
 
-## DAG and data flow
-
-The `load_flats` DAG scrapes the host-published website through Docker's host gateway:
-
-```text
-http://host.docker.internal:8765/
-```
-
-The scraper reads listing links from the index page and metadata from each flat detail page. The DAG definition is in `dags/load_flats.py`, reusable scraper logic is in `scripts/load_flats/scrape_flats.py`, and the source URL and request timeout are passed to the scraper as task arguments. Images are not scraped.
-
-If the saved selectors no longer match, the scraper uses its headless Chromium browser to capture the index and detail DOM, calls the Gemini model configured by `SHELOBA_LLM_MODEL` (default `gemini-3.6-flash`) with `GEMINI_API_KEY`, and retries with the returned selector definition. It saves that definition to `scripts/load_flats/dom_definition.json` only after the retry succeeds. This recovery path is only entered after the normal parser raises a structural error; routine successful loads do not call the LLM.
-
-The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads for one hour. Older snapshots are removed on each load. The current DAG has no automatic schedule, so trigger it manually in the Airflow UI. On the next successful run, the DAG also removes the old `image` column from an existing table.
-
-Inspect loaded records:
-
-```sh
-docker compose exec postgres sh -c \
-  'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-  -c "SELECT id, name, latitude, longitude, updated_at FROM data.listings ORDER BY updated_at, id;"'
-```
-
-After changing the website listing pages, trigger the DAG again to load the new data.
-
 ## Troubleshooting
 
 ### Host port 5432 is allocated
