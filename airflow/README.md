@@ -34,6 +34,8 @@ Enable and trigger the `load_flats` DAG in the Airflow UI. It runs daily after a
 
 The DAG scrapes the host-published website at `http://host.docker.internal:8765/` and inserts one snapshot per listing for each load timestamp into `data.listings`. The DAG definition lives in `dags/`, while reusable scraper logic lives in `scripts/`. The composite key `(id, updated_at)` preserves snapshots for one hour before the DAG removes them.
 
+The scraper uses its known DOM definition first. If it finds no listings or required detail metadata, it opens the pages with Playwright, asks the configured OpenAI-compatible model to define the current selectors, and retries with that definition. Set `OPENAI_API_KEY` for this recovery path and optionally set `SHELOBA_LLM_MODEL` (default: `gpt-4o-mini`) in the Airflow container environment. The LLM is not contacted when the known DOM definition succeeds.
+
 Inspect loaded records with:
 
 ```sh

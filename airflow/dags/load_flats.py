@@ -13,10 +13,9 @@ from scripts.load_flats.scrape_flats import scrape_flats
 
 def load_flats(
     source_url: str,
-    user_agent: str,
     request_timeout_seconds: int,
 ) -> None:
-    flats = scrape_flats(source_url, user_agent, request_timeout_seconds)
+    flats = scrape_flats(source_url, request_timeout_seconds)
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONNECTION_ID)
 
     with hook.get_conn() as connection:
@@ -34,12 +33,12 @@ def load_flats(
                     address TEXT NOT NULL,
                     latitude DOUBLE PRECISION NOT NULL,
                     longitude DOUBLE PRECISION NOT NULL,
-                    image TEXT NOT NULL,
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                     PRIMARY KEY (id, updated_at)
                 )
                 """
             )
+            cursor.execute("ALTER TABLE data.listings DROP COLUMN IF EXISTS image")
             cursor.execute("ALTER TABLE data.listings DROP CONSTRAINT IF EXISTS listings_pkey")
             cursor.execute("ALTER TABLE data.listings DROP CONSTRAINT IF EXISTS listings_slug_key")
             cursor.execute(
@@ -56,9 +55,9 @@ def load_flats(
                 """
                 INSERT INTO data.listings (
                     id, slug, name, price, living_space, rooms, address,
-                    latitude, longitude, image, updated_at
+                    latitude, longitude, updated_at
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 """,
                 [
                     (
@@ -71,7 +70,6 @@ def load_flats(
                         flat["address"],
                         flat["latitude"],
                         flat["longitude"],
-                        flat["image"],
                     )
                     for flat in flats
                 ],
@@ -81,7 +79,7 @@ dag = DAG(
     dag_id="load_flats",
     description="Load listings from the website",
     start_date=pendulum.now("Europe/Berlin"),
-    schedule_interval=timedelta(minutes=2),
+    schedule=None,
     catchup=False,
     tags=["flats"],
 )
@@ -91,7 +89,6 @@ load_flats_task = PythonOperator(
     python_callable=load_flats,
     op_kwargs={
         "source_url": "http://host.docker.internal:8765/",
-        "user_agent": "ShelobaAirflowScraper/1.0",
         "request_timeout_seconds": 30,
     },
     dag=dag,

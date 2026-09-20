@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{NAME}} · Sheloba</title>
+    <title>{{NAME}} · Dummy Flats</title>
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="./index.html">Sheloba</a>
+      <a class="brand" href="./index.html">Dummy Flats</a>
       <nav class="nav">
         <a href="./index.html">Flats</a>
         <a href="#enquire">Enquire</a>
@@ -23,22 +23,17 @@
         <div id="gallery" class="gallery" style="background-image: url('{{IMAGE}}')"></div>
         <aside class="facts-panel">
           <div
-            id="flat-facts"
+            id="listing-overview"
             aria-live="polite"
-            data-price="{{PRICE}}"
-            data-name="{{NAME}}"
-            data-living-space="{{LIVING_SPACE}}"
-            data-id="{{ID}}"
-            data-latitude="{{LATITUDE}}"
-            data-longitude="{{LONGITUDE}}"
+            data-facts='{"price":"{{PRICE}}","name":"{{NAME}}","livingSpace":"{{LIVING_SPACE}}","id":"{{ID}}","latitude":"{{LATITUDE}}","longitude":"{{LONGITUDE}}"}'
           ></div>
           <p id="address">{{ROOMS}} · {{ADDRESS}}</p>
-          <a class="cta" id="enquire" href="mailto:viewings@sheloba.example">Request a viewing</a>
+          <a class="cta" id="enquire" href="mailto:viewings@dummyflats.example">Request a viewing</a>
         </aside>
       </div>
     </main>
     <footer class="site-footer">
-      <span>Sheloba residential</span>
+      <span>Dummy Flats</span>
       <span>Listing details refresh markup every minute</span>
       <span id="layout-note" class="layout-note"></span>
     </footer>

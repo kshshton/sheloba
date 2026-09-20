@@ -1,6 +1,6 @@
-# Sheloba Website
+# Dummy Flats Website
 
-The Sheloba website displays the available flat listings and serves the HTML pages scraped by the Airflow DAG.
+The Dummy Flats website displays the available flat listings and serves the HTML pages scraped by the Airflow DAG.
 
 ## Run locally
 

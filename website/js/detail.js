@@ -5,14 +5,9 @@ import {
   renderFacts,
 } from "./dom-layouts.js";
 
-const facts = document.getElementById("flat-facts");
+const facts = document.getElementById("listing-overview");
 const note = document.getElementById("layout-note");
-const flat = {
-  price: facts.dataset.price,
-  name: facts.dataset.name,
-  livingSpace: facts.dataset.livingSpace,
-  id: facts.dataset.id,
-};
+const flat = JSON.parse(facts.dataset.facts || "{}");
 
 function paintFacts() {
   renderFacts(facts, flat);

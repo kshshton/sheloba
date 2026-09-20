@@ -1,0 +1,11 @@
+{
+  "index": {
+    "listing_selector": ".property-tile",
+    "url_selector": "a.property-link"
+  },
+  "detail": {
+    "facts_selector": "#listing-overview",
+    "facts_attribute": "data-facts",
+    "address_selector": "#address"
+  }
+}

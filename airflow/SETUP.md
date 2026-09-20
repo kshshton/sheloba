@@ -225,6 +225,8 @@ http://host.docker.internal:8765/
 
 The scraper reads listing links from the index page and metadata from each flat detail page. The DAG definition is in `dags/load_flats.py`, reusable scraper logic is in `scripts/load_flats/scrape_flats.py`, and the source URL, user agent, and request timeout are passed to the scraper as task arguments.
 
+If the known selectors no longer match, the scraper uses its headless Chromium browser to capture the index and detail DOM, calls the model configured by `SHELOBA_LLM_MODEL` (default `gpt-4o-mini`) with `OPENAI_API_KEY`, and retries using the returned selector definition. This recovery path is only entered after the normal parser raises a structural error; routine successful loads do not call the LLM.
+
 The DAG creates the `data` schema and timestamped listing snapshots in `data.listings`. Each load inserts all listings with a new `updated_at` timestamp, and the composite key `(id, updated_at)` keeps snapshots from earlier loads for one hour. Older snapshots are removed on each load. Enable the DAG in the Airflow UI and trigger it manually, or wait for its daily schedule.
 
 Inspect loaded records:

@@ -40,6 +40,8 @@ services:
       AIRFLOW_CONN_SHELOBA_POSTGRES: postgresql://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@postgres:5432/${POSTGRES_DB:-airflow}
       AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME:-admin}
       AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SHELOBA_LLM_MODEL: ${SHELOBA_LLM_MODEL:-gemini-3.6-flash}
       PYTHONPATH: /opt/airflow
     volumes: &airflow-volumes
       - ./dags:/opt/airflow/dags:z

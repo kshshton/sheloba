@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the Sheloba site without exposing listing metadata as a public file."""
+"""Serve the Dummy Flats site without exposing listing metadata as a public file."""
 
 from __future__ import annotations
 
@@ -38,10 +38,13 @@ def listing_cards() -> str:
         image = escape(flat["image"], quote=True)
         cards.append(
             (
-                f'<a class="listing-card" href="./flat.html?slug={slug}">'
+                f'<article class="property-tile">'
                 f'<div class="photo" style="background-image: url(&quot;{image}&quot;)"></div>'
-                f'<div class="body"><h2>{name}</h2><p>{price} · {space}</p></div>'
-                f"</a>"
+                f'<div class="body">'
+                f'<span class="eyebrow">Listing</span>'
+                f'<a class="property-link" href="./flat.html?slug={slug}">{name}</a>'
+                f'<p>{price} · {space}</p>'
+                f"</div></article>"
             )
         )
     return "".join(cards)
@@ -131,5 +134,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = ThreadingHTTPServer((HOST, PORT), Handler)
-    print(f"Serving Sheloba on http://{HOST}:{PORT}/")
+    print(f"Serving Dummy Flats on http://{HOST}:{PORT}/")
     server.serve_forever()
