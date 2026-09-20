@@ -8,14 +8,14 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from scripts.config import POSTGRES_CONNECTION_ID
-from scripts.load_flats.scrape_flats import scrape_flats
+from scripts.load_flats.scrape_listings import scrape_listings
 
 
 def load_flats(
     source_url: str,
     request_timeout_seconds: int,
 ) -> None:
-    flats = scrape_flats(source_url, request_timeout_seconds)
+    flats = scrape_listings(source_url, request_timeout_seconds)
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONNECTION_ID)
 
     with hook.get_conn() as connection:
@@ -75,23 +75,21 @@ def load_flats(
                 ],
             )
 
-dag = DAG(
-    dag_id="load_flats",
+
+with DAG(
+    dag_id="extract_listings",
     description="Load listings from the website",
     start_date=pendulum.now("Europe/Berlin"),
     schedule=None,
     catchup=False,
     tags=["flats"],
-)
-
-load_flats_task = PythonOperator(
-    task_id="load_flats",
-    python_callable=load_flats,
-    op_kwargs={
-        "source_url": "http://host.docker.internal:8765/",
-        "request_timeout_seconds": 30,
-    },
-    dag=dag,
-)
-
-load_flats_task
+) as dag:
+    load_flats_task = PythonOperator(
+        task_id="extract_listings",
+        python_callable=load_flats,
+        op_kwargs={
+            "source_url": "http://website:8765/",
+            "request_timeout_seconds": 30,
+        },
+        dag=dag,
+    )

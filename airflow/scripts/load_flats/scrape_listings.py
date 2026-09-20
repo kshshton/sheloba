@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, urljoin, urlparse
 
+from scripts.load_flats.data_quality import DataQualityError, validate_schema
+
 DOM_DEFINITION_PATH = Path(__file__).with_name("dom_definition.json")
 
 
@@ -92,19 +94,19 @@ def _scrape_with_definition(
                 required = {"id", "name", "price", "livingSpace", "latitude", "longitude"}
                 if not required <= facts.keys():
                     raise _DOMStructureError(f"Listing {relative_url} has incomplete facts")
-                flats.append(
-                    {
-                        "id": str(facts["id"]),
-                        "slug": parse_qs(urlparse(detail_url).query).get("slug", [""])[0],
-                        "name": str(facts["name"]),
-                        "price": str(facts["price"]),
-                        "livingSpace": str(facts["livingSpace"]),
-                        "rooms": rooms,
-                        "address": address,
-                        "latitude": float(facts["latitude"]),
-                        "longitude": float(facts["longitude"]),
-                    }
-                )
+                flat = {
+                    "id": str(facts["id"]),
+                    "slug": parse_qs(urlparse(detail_url).query).get("slug", [""])[0],
+                    "name": str(facts["name"]),
+                    "price": str(facts["price"]),
+                    "livingSpace": str(facts["livingSpace"]),
+                    "rooms": rooms,
+                    "address": address,
+                    "latitude": float(facts["latitude"]),
+                    "longitude": float(facts["longitude"]),
+                }
+                validate_schema(flat)
+                flats.append(flat)
             return flats
         finally:
             browser.close()
@@ -175,7 +177,7 @@ def _refresh_dom_definition(
             browser.close()
 
 
-def scrape_flats(
+def scrape_listings(
     source_url: str,
     request_timeout_seconds: int,
 ) -> list[dict[str, object]]:

@@ -58,7 +58,7 @@ The model does not receive the database, source files, or API credentials. It se
 ## Project Areas and How They Work
 
 - `website/`: A small Python HTTP server that loads `data/flats.json` and renders an index page plus flat detail pages. The rendered HTML is the scraper contract; raw JSON and server files are not public routes.
-- `airflow/`: The `load_flats` DAG, Playwright scraper, LLM recovery, PostgreSQL integration, and Docker Compose configuration.
+- `airflow/`: The `extract_listings` DAG, Playwright scraper, LLM recovery, PostgreSQL integration, and Docker Compose configuration.
 - `airflow/scripts/load_flats/dom_definition.json`: The saved CSS selectors used during normal scraping.
 
 ## Run the Project
@@ -77,7 +77,7 @@ Open the services:
 - website: <http://localhost:8765>
 - PostgreSQL: `localhost:5433`
 
-Sign in to Airflow and trigger the `load_flats` DAG manually. The current DAG has no automatic schedule.
+Sign in to Airflow and trigger the `extract_listings` DAG manually. The current DAG has no automatic schedule.
 
 After the run completes, confirm that listings were stored:
 

@@ -56,6 +56,14 @@ Airflow containers use the internal Compose hostname and port:
 postgres:5432
 ```
 
+The scheduler reaches the website through its internal Compose hostname:
+
+```text
+http://website:8765
+```
+
+The website is health-checked before the scheduler starts, so the first DAG run does not race website startup.
+
 PostgreSQL is published to the host on port `5433` because host port `5432` is already used by another container:
 
 ```text
