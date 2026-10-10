@@ -9,7 +9,7 @@ Sheloba is a resilient web-scraping pipeline for extracting structured data from
 ## High-Level Flow
 
 ```mermaid
-flowchart LR
+flowchart TB
     W[website] -->|HTML pages| S[Airflow DAG]
     S --> D[dom_definition.json]
     D -->|loaded CSS selectors| P[Playwright browser]
